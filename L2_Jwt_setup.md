@@ -417,3 +417,186 @@ CompliteAuthTestingApp/
 * **Token lifetime & blacklisting:** When changing roles/revoking a user, tokens remain valid until expiry; plan refresh/blacklist if needed.
 
 ---
+
+# 📌 Authorization policies are configured in the AddAuthorization call, typically in Program.cs (or Startup.cs in older versions).
+# ⚡ AllowAnonymous
+
+ The `[AllowAnonymous]` attribute in ASP.NET Core lets you mark specific controller actions or controllers to bypass the `[Authorize]` middleware so that unauthenticated users can access them.
+
+---
+
+### How to implement `[AllowAnonymous]` in your current setup:
+
+By default, your API endpoints might require authentication (if you add `[Authorize]` or configure a global auth policy). But for login and register endpoints, you want **anyone (even unauthenticated users)** to access them, so you decorate those actions with `[AllowAnonymous]`.
+
+---
+
+### Step 1: Add `[AllowAnonymous]` attribute to your register and login actions
+
+Update your `AuthController.cs` like this:
+
+```csharp
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using CustomIdentityApi.Models;
+
+namespace CustomIdentityApi.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+        }
+
+        // Allow anyone to access register (even unauthenticated)
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        {
+            // your existing code here...
+        }
+
+        // Allow anyone to access login (even unauthenticated)
+        [HttpPost("login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        {
+            // your existing code here...
+        }
+    }
+}
+```
+
+---
+
+### Step 2 (optional): Add global authentication requirement
+
+If you want **all** other controllers/actions to require authentication by default, you can add a global authorization policy in `Program.cs`:
+
+```csharp
+builder.Services.AddControllers(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+                     .RequireAuthenticatedUser()
+                     .Build();
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter(policy));
+});
+```
+
+With this, every controller/action requires authentication **except** those marked with `[AllowAnonymous]`.
+
+---
+
+### What happens now?
+
+* Your `/api/auth/register` and `/api/auth/login` endpoints are **public**, accessible without token or cookie.
+* Other API endpoints require authentication unless explicitly marked with `[AllowAnonymous]`.
+
+---
+Great question! When you use **ASP.NET Core Identity**, the `[AllowAnonymous]` attribute works exactly the same way for your API controller actions.
+
+---
+
+### In case of Identity:
+
+* You usually protect routes with `[Authorize]` (or global auth policy).
+* Identity's authentication middleware is responsible for authenticating users via cookies by default (or JWT if configured).
+* `[AllowAnonymous]` tells ASP.NET Core to **skip authentication & authorization checks** on that specific endpoint.
+
+---
+
+### How to use `[AllowAnonymous]` in an Identity setup (no JWT, just Identity cookie-based or sign-in checks):
+
+Just add `[AllowAnonymous]` to your register and login API actions like this:
+
+```csharp
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using CustomIdentityApi.Models;
+
+namespace CustomIdentityApi.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+        }
+
+        [HttpPost("register")]
+        [AllowAnonymous]  // Anyone can access this endpoint without logging in
+        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        {
+            // Your registration logic here
+        }
+
+        [HttpPost("login")]
+        [AllowAnonymous]  // Anyone can access this endpoint without logging in
+        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        {
+            // Your login logic here
+        }
+
+        // Example of an endpoint that requires authentication
+        [HttpGet("profile")]
+        [Authorize] // Only logged-in users can access
+        public async Task<IActionResult> Profile()
+        {
+            // Return user info
+        }
+    }
+}
+```
+
+---
+
+### Important notes for Identity:
+
+* If you don’t add `[Authorize]` or set a global authorization policy, **all API endpoints are open by default** (no auth required).
+* To require authentication globally, you add a global auth policy (see below).
+* Then `[AllowAnonymous]` is used to exclude specific endpoints (register, login) from that requirement.
+
+---
+
+### Optional: Enforce authentication globally in `Program.cs`
+
+```csharp
+builder.Services.AddControllers(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+                     .RequireAuthenticatedUser()
+                     .Build();
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter(policy));
+});
+```
+
+With this, all your API endpoints require logged-in users except those marked with `[AllowAnonymous]`.
+
+---
+
+### Recap:
+
+| Endpoint             | Attribute                           | Access                      |
+| -------------------- | ----------------------------------- | --------------------------- |
+| `/api/auth/register` | `[AllowAnonymous]`                  | Anyone (even not logged in) |
+| `/api/auth/login`    | `[AllowAnonymous]`                  | Anyone                      |
+| Other API endpoints  | `[Authorize]` or global auth policy | Only authenticated users    |
+
+---
+
+
