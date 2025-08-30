@@ -242,6 +242,134 @@ http://localhost:5041/Admin/Banners
 ```
 
 ---
+## **More clearly the concept **
+
+
+
+
+Want the **CommentsController** scaffolding for the Admin area in the same format as your Banner example. Here’s how it will look:
+
+---
+
+### **Folder Structure Before Scaffolding**
+
+```
+Areas/
+ └── Admin/
+     ├── Controllers/
+     │    └── HomeController.cs
+     ├── Views/
+     │    ├── Home/
+     │    │    └── Index.cshtml
+     │    └── Shared/
+     │         ├── _Layout.cshtml
+     │         └── _ViewStart.cshtml
+Models/
+ └── Db/
+     ├── OnlineShopContext.cs
+     └── Comment.cs
+```
+
+---
+
+### **Command to Scaffold Controller & Views**
+
+Run this in the **project root**:
+
+```bash
+dotnet aspnet-codegenerator controller \
+  -name CommentsController \
+  -m OnlineShop.Models.Db.Comment \
+  -dc OnlineShop.Models.Db.OnlineShopContext \
+  --relativeFolderPath Areas/Admin/Controllers \
+  --layout ~/Areas/Admin/Views/Shared/_Layout.cshtml \
+  --referenceScriptLibraries \
+  -f
+```
+
+ **Explanation of options:**
+
+* `-name CommentsController` → Name of the controller.
+* `-m OnlineShop.Models.Db.Comment` → Fully qualified name of your model.
+* `-dc OnlineShop.Models.Db.OnlineShopContext` → Fully qualified name of your DbContext.
+* `--relativeFolderPath Areas/Admin/Controllers` → Places controller inside Admin area.
+* `--layout ~/Areas/Admin/Views/Shared/_Layout.cshtml` → Uses Admin area layout.
+* `--referenceScriptLibraries` → Adds validation JS libraries in the views.
+* `-f` → Force overwrite if files already exist.
+
+---
+
+### **Modify Controller for Area**
+
+Open `CommentsController.cs` and add:
+
+```csharp
+[Area("Admin")]
+public class CommentsController : Controller
+{
+    // scaffolded code will be here
+}
+```
+
+Also, update the namespace:
+
+```csharp
+namespace OnlineShop.Areas.Admin.Controllers
+```
+
+---
+
+### **Update Admin Area Route**
+
+Check **Program.cs** or **Startup.cs**:
+
+```csharp
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+```
+
+---
+
+### **Folder Structure After Scaffolding**
+
+```
+Areas/
+ └── Admin/
+     ├── Controllers/
+     │    ├── HomeController.cs
+     │    └── CommentsController.cs
+     ├── Views/
+     │    ├── Home/
+     │    │    └── Index.cshtml
+     │    ├── Comments/
+     │    │    ├── Create.cshtml
+     │    │    ├── Delete.cshtml
+     │    │    ├── Details.cshtml
+     │    │    ├── Edit.cshtml
+     │    │    └── Index.cshtml
+     │    └── Shared/
+     │         ├── _Layout.cshtml
+     │         └── _ViewStart.cshtml
+Models/
+ └── Db/
+     ├── OnlineShopContext.cs
+     └── Comment.cs
+```
+
+---
+
+### **Access**
+
+After scaffolding, your **Admin Comments section** will be accessible at:
+
+```
+http://localhost:5041/Admin/Comments
+```
+
+
+
+
 
 
 ---
