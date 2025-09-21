@@ -1,21 +1,21 @@
 <br>
 <br>
 
-# 🔥📝 Way 1 for Roal Seed  📝🔥
+# 🔥 Way 1 for Roal Seed  🔥
 
 <br>
 <br>
 ---
 
-## ✅ Benefits of Extension Method
+##  Benefits of Extension Method
 
-| ✅ Clean Program.cs         | ✅ Easy Testing                               | ✅ Scalable for User/Role Seeding        |
+|  Clean Program.cs         |  Easy Testing                               |  Scalable for User/Role Seeding        |
 | -------------------------- | -------------------------------------------- | --------------------------------------- |
 | Keeps `Program.cs` minimal | Easily write unit tests or integration tests | Add multiple users, roles, claims, etc. |
 
 ---
 
-## ✅ Step-by-Step Implementation Using Extension Method
+##  Step-by-Step Implementation Using Extension Method
 
 ---
 
@@ -136,7 +136,7 @@ app.Run();
 <br>
 <br>
 
-# 🔥📝 Way 2 for Roal Seed  📝🔥
+# 🔥 Way 2 for Roal Seed  🔥
 
 <br>
 <br>
@@ -145,7 +145,7 @@ app.Run();
 
 
 
-## ✅ Step 1: Create `SeedRole.cs` (for roles + admin user)
+##  Step 1: Create `SeedRole.cs` (for roles + admin user)
 
 📄 `Data/SeedRole.cs`
 
@@ -165,7 +165,7 @@ namespace CompliteAuthTestingApp.Data
 
             string[] roles = { "ADMIN", "USER", "STAFF", "MODERATOR" };
 
-            // ✅ 1. Seed Roles
+            //  1. Seed Roles
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -174,7 +174,7 @@ namespace CompliteAuthTestingApp.Data
                 }
             }
 
-            // ✅ 2. Seed Default Admin User
+            //  2. Seed Default Admin User
             var adminEmail = "admin@example.com";
             var adminPassword = "Admin@123"; // 🔐 You can later hash or read from secrets
 
@@ -200,7 +200,7 @@ namespace CompliteAuthTestingApp.Data
 
 ---
 
-## ✅ Step 2: Modify `Program.cs` to Call the Seeder
+##  Step 2: Modify `Program.cs` to Call the Seeder
 
 📄 `Program.cs`
 
@@ -212,23 +212,23 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Add DbContext
+//  Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ✅ Add Identity
+//  Add Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// ✅ Add other services
+//  Add other services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// ✅ Seed roles + admin user
+//  Seed roles + admin user
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -248,7 +248,7 @@ app.Run();
 
 ---
 
-## ✅ Step 3: Ensure `ApplicationUser.cs` Exists
+##  Step 3: Ensure `ApplicationUser.cs` Exists
 
 📄 `Models/ApplicationUser.cs`
 
@@ -266,7 +266,7 @@ namespace CompliteAuthTestingApp.Models
 
 ---
 
-## ✅ Step 4: Run the Migrations and Database Update
+##  Step 4: Run the Migrations and Database Update
 
 ```bash
 dotnet ef migrations add InitIdentity
